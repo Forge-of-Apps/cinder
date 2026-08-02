@@ -9,6 +9,7 @@ defmodule Cinder.FilterManager do
   use Phoenix.Component
 
   alias Cinder.Filters.Registry
+  alias Phoenix.LiveView.JS
   use Cinder.Messages
 
   import Cinder.Filter, only: [filter_id: 2, filter_id: 3]
@@ -250,7 +251,7 @@ defmodule Cinder.FilterManager do
     assigns = assign(assigns, :filter_content, filter_content)
 
     ~H"""
-    <div class="flex items-center">
+    <div class="flex items-center group/cinder-filter">
       <div class="flex-1">
         <%= @filter_content %>
       </div>
@@ -258,18 +259,26 @@ defmodule Cinder.FilterManager do
       <!-- Clear individual filter button - always present but invisible when no value -->
       <button
         type="button"
-        phx-click="clear_filter"
+        phx-click={
+          JS.dispatch("cinder:clear-inputs", to: {:closest, ~s([data-key="filter_input_wrapper_class"])})
+          |> JS.push("clear_filter")
+        }
         phx-value-key={@column.field}
         phx-target={@target}
         class={[
           @theme.filter_clear_button_class,
-          unless(@current_value != "" and not is_nil(@current_value) and @current_value != [] and @current_value != %{from: "", to: ""} and @current_value != %{min: "", max: ""}, do: "invisible", else: "")
+          unless(@current_value != "" and not is_nil(@current_value) and @current_value != [] and @current_value != %{from: "", to: ""} and @current_value != %{min: "", max: ""}, do: "invisible group-has-[input:invalid]/cinder-filter:visible", else: "")
         ]}
         data-key="filter_clear_button_class"
         title={dgettext("cinder", "Clear filter")}
       >
         ×
       </button>
+      <script :type={Phoenix.LiveView.ColocatedJS}>
+        window.addEventListener("cinder:clear-inputs", (e) => {
+          e.target.querySelectorAll("input:invalid").forEach((input) => { input.value = "" })
+        })
+      </script>
     </div>
     """
   end

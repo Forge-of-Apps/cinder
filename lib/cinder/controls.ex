@@ -317,7 +317,10 @@ defmodule Cinder.Controls do
       <button
         :if={@has_filters}
         type="button"
-        phx-click="clear_all_filters"
+        phx-click={
+          JS.dispatch("cinder:clear-inputs", to: {:closest, ~s([data-key="filter_container_class"])})
+          |> JS.push("clear_all_filters")
+        }
         phx-target={@target}
         class={[@theme.filter_clear_all_class, if(@active_filter_count == 0, do: "invisible", else: "")]}
         data-key="filter_clear_all_class"
