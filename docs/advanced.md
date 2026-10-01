@@ -395,6 +395,29 @@ Use `query_opts` to load only needed data:
 </Cinder.collection>
 ```
 
+**Custom Pagination Controls:**
+
+The `<:pagination_controls>` slot replaces the default controls, shown whenever there
+is more than one page. It receives `%{page: page, page_size_config: config, target: myself}`,
+so a "Show more" button can grow the page through Cinder's own `change_page_size` event
+(the size must be one of the configured options):
+
+```heex
+<Cinder.collection resource={MyApp.User} page_size={[default: 10, options: [10, 20, 30]]}>
+  <:col :let={user} field="name">{user.name}</:col>
+
+  <:pagination_controls :let={pagination}>
+    <button
+      phx-click="change_page_size"
+      phx-value-page_size={pagination.page.limit + 10}
+      phx-target={pagination.target}
+    >
+      Show more
+    </button>
+  </:pagination_controls>
+</Cinder.collection>
+```
+
 **Global Default Page Size:**
 
 Set a default page size for all collections in your config:

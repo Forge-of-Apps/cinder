@@ -6,6 +6,7 @@
 
 * Added `initial_load={:sync}`, which puts the first page of data in the server-rendered HTML. Thanks @Alt-iOS! ([#203](https://github.com/sevenseacat/cinder/pull/203))
 * `on_query_change` payloads now carry a `count` key with the total matching records, so parents no longer need their own `Ash.count!`. Thanks @mbaertschi! ([#208](https://github.com/sevenseacat/cinder/pull/208))
+* Added a `<:pagination_controls>` slot that replaces the default pagination controls, such as with a "Show more" button. It receives the page, the page size config and the component's target via `:let`.
 
 ## v0.17.0 (2026-08-08)
 

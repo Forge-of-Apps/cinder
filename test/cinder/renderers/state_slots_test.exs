@@ -164,6 +164,14 @@ defmodule Cinder.Renderers.StateSlotsTest do
     [%{__slot__: :custom, inner_block: fn _, _ -> content end}]
   end
 
+  defp paged_with_slot(content) do
+    %{
+      show_pagination: true,
+      page: %Ash.Page.Offset{results: [], count: 30, offset: 0, limit: 10, more?: true},
+      pagination_slot: make_slot(content)
+    }
+  end
+
   defp make_slot_with_let(render_fn) do
     [%{__slot__: :custom, inner_block: fn _changed, ctx -> render_fn.(ctx) end}]
   end
@@ -307,6 +315,14 @@ defmodule Cinder.Renderers.StateSlotsTest do
       refute html =~ "An error occurred"
       refute html =~ "error-container"
     end
+
+    test "custom pagination slot replaces the default controls" do
+      html =
+        render_component(&TableRenderer.render/1, table_assigns(paged_with_slot("Show more")))
+
+      assert html =~ "Show more"
+      refute html =~ "Page 1 of 3"
+    end
   end
 
   describe "table renderer - state precedence" do
@@ -429,6 +445,13 @@ defmodule Cinder.Renderers.StateSlotsTest do
       assert html =~ "List error! Retry?"
       refute html =~ "An error occurred"
     end
+
+    test "custom pagination slot replaces the default controls" do
+      html = render_component(&ListRenderer.render/1, list_assigns(paged_with_slot("Show more")))
+
+      assert html =~ "Show more"
+      refute html =~ "Page 1 of 3"
+    end
   end
 
   describe "list renderer - state precedence" do
@@ -531,6 +554,13 @@ defmodule Cinder.Renderers.StateSlotsTest do
 
       assert html =~ "Grid error! Retry?"
       refute html =~ "An error occurred"
+    end
+
+    test "custom pagination slot replaces the default controls" do
+      html = render_component(&GridRenderer.render/1, grid_assigns(paged_with_slot("Show more")))
+
+      assert html =~ "Show more"
+      refute html =~ "Page 1 of 3"
     end
   end
 

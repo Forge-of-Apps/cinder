@@ -75,4 +75,45 @@ defmodule Cinder.Renderers.PaginationTest do
       assert html =~ ~s(#users-table-page-size-options)
     end
   end
+
+  describe "pagination slot" do
+    defp slot_assigns(page) do
+      Map.merge(base_assigns("slot-table"), %{
+        page: page,
+        myself: "target",
+        pagination_slot: [
+          %{
+            __slot__: :pagination_controls,
+            inner_block: fn _changed, ctx ->
+              "limit #{ctx.page.limit} of #{ctx.page.count}, " <>
+                "size #{ctx.page_size_config.selected_page_size}, target #{ctx.target}"
+            end
+          }
+        ]
+      })
+    end
+
+    test "replaces the default controls inside the wrapper and receives the page" do
+      html = render_component(&Pagination.render/1, slot_assigns(base_assigns("t").page))
+
+      assert html =~ ~s(class="pagination-wrapper")
+      assert html =~ "limit 10 of 100, size 10, target target"
+      refute html =~ "pagination-nav"
+      refute html =~ "page-size-container"
+    end
+
+    test "is not rendered when every result fits on one page" do
+      page = %Ash.Page.Offset{results: [%{id: 1}], count: 1, offset: 0, limit: 10, more?: false}
+      html = render_component(&Pagination.render/1, slot_assigns(page))
+
+      refute html =~ "limit"
+      refute html =~ "pagination-wrapper"
+    end
+
+    test "is not rendered when pagination is switched off" do
+      assigns = Map.put(slot_assigns(base_assigns("t").page), :show_pagination, false)
+
+      refute render_component(&Pagination.render/1, assigns) =~ "limit"
+    end
+  end
 end

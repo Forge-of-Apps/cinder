@@ -34,23 +34,31 @@ defmodule Cinder.Renderers.Pagination do
   - `theme` - Theme configuration map
   - `myself` - LiveComponent reference for event targeting
   - `show_pagination` - Boolean to enable/disable pagination (default: true)
+
+  ## Optional assigns
+  - `pagination_slot` - Replaces the default controls inside the wrapper. Receives
+    `%{page: page, page_size_config: config, target: myself}` via `:let`.
   """
   def render(assigns) do
     show = Map.get(assigns, :show_pagination, true) and show_pagination?(assigns.page)
 
-    if show do
-      # Use pagination_mode (if provided) to determine UI, not just page struct type.
-      # This handles the case where keyset mode returns Ash.Page.Offset on the first page
-      # (when no cursor is provided yet).
-      pagination_mode = Map.get(assigns, :pagination_mode, :offset)
-
-      case pagination_mode do
-        :keyset -> render_keyset(assigns)
-        :offset -> render_offset(assigns)
-      end
-    else
-      render_empty(assigns)
+    # Use pagination_mode (if provided) to determine UI, not just page struct type.
+    # This handles the case where keyset mode returns Ash.Page.Offset on the first page
+    # (when no cursor is provided yet).
+    cond do
+      not show -> render_empty(assigns)
+      Map.get(assigns, :pagination_slot, []) != [] -> render_slot_content(assigns)
+      Map.get(assigns, :pagination_mode, :offset) == :keyset -> render_keyset(assigns)
+      true -> render_offset(assigns)
     end
+  end
+
+  defp render_slot_content(assigns) do
+    ~H"""
+    <div class={@theme.pagination_wrapper_class} data-key="pagination_wrapper_class">
+      {render_slot(@pagination_slot, %{page: @page, page_size_config: @page_size_config, target: @myself})}
+    </div>
+    """
   end
 
   defp render_empty(assigns) do

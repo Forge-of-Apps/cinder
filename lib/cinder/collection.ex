@@ -367,6 +367,13 @@ defmodule Cinder.Collection do
   slot(:empty, required: false, doc: "Custom empty state content")
   slot(:error, required: false, doc: "Custom error state content")
 
+  slot(:pagination_controls,
+    required: false,
+    doc:
+      "Custom pagination controls, shown where the default ones would be. " <>
+        "Receives %{page: page, page_size_config: config, target: myself} via :let."
+  )
+
   def collection(assigns) do
     assigns =
       assigns
@@ -444,6 +451,7 @@ defmodule Cinder.Collection do
     loading_slot = Map.get(assigns, :loading, [])
     empty_slot = Map.get(assigns, :empty, [])
     error_slot = Map.get(assigns, :error, [])
+    pagination_slot = Map.get(assigns, :pagination_controls, [])
 
     # Resolve theme
     resolved_theme = resolve_theme(assigns.theme)
@@ -472,6 +480,7 @@ defmodule Cinder.Collection do
       |> assign(:loading_slot, loading_slot)
       |> assign(:empty_slot, empty_slot)
       |> assign(:error_slot, error_slot)
+      |> assign(:pagination_slot, pagination_slot)
       |> assign(:row_click, row_click)
       |> assign(:item_click, item_click)
       |> assign(:resolved_theme, resolved_theme)
@@ -506,6 +515,7 @@ defmodule Cinder.Collection do
         loading_slot={@loading_slot}
         empty_slot={@empty_slot}
         error_slot={@error_slot}
+        pagination_slot={@pagination_slot}
         col={@processed_columns}
         query_columns={@query_columns}
         row_click={@row_click}
